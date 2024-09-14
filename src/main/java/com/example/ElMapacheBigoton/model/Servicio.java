@@ -19,5 +19,38 @@ public class Servicio {
     private String Descripcion;
     @Column(nullable = false)
     private double costo;
+
+    public Servicio() {
+    }
+
+    public long getIdServicio() {
+        return idServicio;
+    }
+    
+    public void setIdServicio(Long idServicio) {
+        this.idServicio = idServicio;
+    }
+
+    public String getDescripcion() {
+        return Descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        Descripcion = descripcion;
+    }
+
+    public double getCosto() {
+        return costo;
+    }
+
+    public void setCosto(double costo) {
+        
+        this.costo = costo;
+    }
+
+    @Override
+    public String toString() {
+        return "Servicio [Descripcion=" + Descripcion + ", costo=" + costo + ", idServicio=" + idServicio + "]";
+    }
 }
  
