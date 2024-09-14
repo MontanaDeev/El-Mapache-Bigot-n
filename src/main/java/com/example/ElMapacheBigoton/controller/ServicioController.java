@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.example.ElMapacheBigoton.model.Servicio;;
+import com.example.ElMapacheBigoton.model.Servicio;
 import com.example.ElMapacheBigoton.repository.ServicioRepository;
 @RestController
 @RequestMapping("/servicio")
