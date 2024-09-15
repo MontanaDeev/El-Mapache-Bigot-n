@@ -1,12 +1,17 @@
 package com.example.ElMapacheBigoton.model;
 
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,6 +24,14 @@ public class Servicio {
     private String Descripcion;
     @Column(nullable = false)
     private double costo;
+
+    @ManyToMany(cascade= CascadeType.ALL)
+    @JoinTable(
+        name= "CitaServicio",
+        joinColumns= @JoinColumn(name = "idServicio", referencedColumnName= "idServicio"),
+        inverseJoinColumns = @JoinColumn(name= "idCita", referencedColumnName= "idCita")
+    )
+    private List<Cita> citas;
 
     public Servicio() {
     }
@@ -47,6 +60,15 @@ public class Servicio {
         
         this.costo = costo;
     }
+
+    public List<Cita> getCitas() {
+        return citas;
+    }
+    
+    public void setCitas(List<Cita> citas) {
+        this.citas = citas;
+    }    
+
 
     @Override
     public String toString() {

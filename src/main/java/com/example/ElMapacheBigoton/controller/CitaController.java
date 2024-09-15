@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.example.ElMapacheBigoton.model.Cita;
-import com.example.ElMapacheBigoton.repository.CitaRepository;
-import com.example.ElMapacheBigoton.model.Cliente;
-import com.example.ElMapacheBigoton.repository.ClienteRepository;
 import com.example.ElMapacheBigoton.model.Barbero;
+import com.example.ElMapacheBigoton.model.Cita;
+import com.example.ElMapacheBigoton.model.Cliente;
+import com.example.ElMapacheBigoton.model.Servicio;
 import com.example.ElMapacheBigoton.repository.BarberoRepository;
+import com.example.ElMapacheBigoton.repository.CitaRepository;
+import com.example.ElMapacheBigoton.repository.ClienteRepository;
 
 @RestController
 @RequestMapping("/cita")
@@ -101,5 +102,15 @@ public class CitaController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+    
+    //Obtener los servicios de una cita
+    @GetMapping("/{idCita}/servicios")
+    public ResponseEntity<Iterable<Servicio>> getCitaServicios(@PathVariable Long idCita){
+        Optional<Cita> citaOptional = citaRepository.findById(idCita);
+        if (!citaOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(citaOptional.get().getServicios());
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.example.ElMapacheBigoton.model.Cita;
 import com.example.ElMapacheBigoton.model.Servicio;
 import com.example.ElMapacheBigoton.repository.ServicioRepository;
 @RestController
@@ -60,6 +62,16 @@ public class ServicioController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    //Obtener las citas de un servicio
+    @GetMapping("/{idServicio}/citas")
+    public ResponseEntity<Iterable<Cita>> getServicioCitas(@PathVariable Long idServicio){
+        Optional<Servicio> servicioOptional = servicioRepository.findById(idServicio);
+        if (!servicioOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(servicioOptional.get().getCitas());
     }
     
 }

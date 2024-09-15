@@ -2,10 +2,23 @@ package com.example.ElMapacheBigoton.model;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Cita")
@@ -25,6 +38,15 @@ public class Cita {
     @JoinColumn(name = "idBarbero")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Barbero barbero;
+
+    @ManyToMany(cascade= CascadeType.ALL)
+    @JsonBackReference
+    @JoinTable(
+        name= "CitaServicio",
+        joinColumns= @JoinColumn(name = "idCita", referencedColumnName= "idCita"),
+        inverseJoinColumns= @JoinColumn(name= "idServicio", referencedColumnName= "idServicio")
+    )
+    private List<Servicio> servicios;
 
     public Cita(long idCita, Date fecha, Time hora) {
         this.idCita = idCita;
@@ -75,6 +97,14 @@ public class Cita {
     public void setBarbero(Barbero barbero) {
         this.barbero = barbero;
     }
+
+    public List<Servicio> getServicios() {
+        return servicios;
+    }
+    
+    public void setServicios(List<Servicio> servicios) {
+        this.servicios = servicios;
+    }    
 
     @Override
     public String toString() {
