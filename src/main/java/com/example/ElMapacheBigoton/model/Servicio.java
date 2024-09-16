@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 public class Servicio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_servicio")
     private Long idServicio;
     @Column(nullable = false, length = 100)
     private String Descripcion;
@@ -27,14 +28,16 @@ public class Servicio {
 
     @ManyToMany(cascade= CascadeType.ALL)
     @JoinTable(
-        name= "CitaServicio",
-        joinColumns= @JoinColumn(name = "idServicio", referencedColumnName= "idServicio"),
-        inverseJoinColumns = @JoinColumn(name= "idCita", referencedColumnName= "idCita")
+        name= "cita_servicio",
+        joinColumns= @JoinColumn(name = "id_servicio", referencedColumnName= "id_servicio"),
+        inverseJoinColumns = @JoinColumn(name= "id_cita", referencedColumnName= "id_cita")
     )
     private List<Cita> citas;
 
     public Servicio() {
     }
+
+    
 
     public long getIdServicio() {
         return idServicio;

@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CascadeType;
@@ -25,26 +24,26 @@ import jakarta.persistence.Table;
 public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_cita")
     private Long idCita;
     @Column(nullable = false)
     private Date fecha;
     @Column(nullable = false)
     private Time hora;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "idCliente")
+    @JoinColumn(name = "id_cliente")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Cliente cliente;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "idBarbero")
+    @JoinColumn(name = "id_barbero")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Barbero barbero;
 
     @ManyToMany(cascade= CascadeType.ALL)
-    @JsonBackReference
     @JoinTable(
-        name= "CitaServicio",
-        joinColumns= @JoinColumn(name = "idCita", referencedColumnName= "idCita"),
-        inverseJoinColumns= @JoinColumn(name= "idServicio", referencedColumnName= "idServicio")
+        name= "cita_servicio",
+        joinColumns= @JoinColumn(name = "id_cita", referencedColumnName= "id_cita"),
+        inverseJoinColumns= @JoinColumn(name= "id_servicio", referencedColumnName= "id_servicio")
     )
     private List<Servicio> servicios;
 
@@ -113,7 +112,8 @@ public class Cita {
                 + "\n Fecha: " + fecha
                 + "\n Hora: " + hora
                 + "\n Cliente: " + cliente
-                + "\n Barbero: " + barbero;
+                + "\n Barbero: " + barbero
+                + "\n Servicios: " + servicios;
     }
 
 }
