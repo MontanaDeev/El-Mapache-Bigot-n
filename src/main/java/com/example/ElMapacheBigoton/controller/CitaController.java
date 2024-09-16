@@ -1,9 +1,15 @@
 package com.example.ElMapacheBigoton.controller;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.example.ElMapacheBigoton.repository.ServicioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +35,8 @@ public class CitaController {
 
     @Autowired
     CitaRepository citaRepository;
-
+    @Autowired
+    ServicioRepository servicioRepository;
     @Autowired
     ClienteRepository clienteRepository;
 
@@ -51,48 +58,58 @@ public class CitaController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Void> create(@RequestBody Cita cita, UriComponentsBuilder ucb) {
-        Optional<Cliente> clienteOptional = clienteRepository.findById(cita.getCliente().getIdCliente());
-        if (!clienteOptional.isPresent()) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
-        Optional<Barbero> barberoOptional = barberoRepository.findById(cita.getBarbero().getIdBarbero());
-        if (!barberoOptional.isPresent()) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
 
-        cita.setCliente(clienteOptional.get());
-        cita.setBarbero(barberoOptional.get());
-        Cita savedCita = citaRepository.save(cita);
-        URI uri = ucb
-                .path("cita/{idCita}")
-                .buildAndExpand(savedCita.getIdCita())
-                .toUri();
-        return ResponseEntity.created(uri).build();
+
+    @PostMapping()
+    public ResponseEntity<?> create(@RequestBody Cita cita, UriComponentsBuilder ucb) {
+        try {
+            // Validar si la cita está vacía o nula
+            if (cita == null || cita.getCliente() == null || cita.getBarbero() == null || cita.getServicios() == null) {
+                return ResponseEntity.badRequest().body("Invalid data: Missing required fields");
+            }
+
+            // Validar cliente
+            Optional<Cliente> clienteOptional = clienteRepository.findById(cita.getCliente().getIdCliente());
+            if (!clienteOptional.isPresent()) {
+                return ResponseEntity.unprocessableEntity().body("Cliente not found");
+            }
+
+            // Validar barbero
+            Optional<Barbero> barberoOptional = barberoRepository.findById(cita.getBarbero().getIdBarbero());
+            if (!barberoOptional.isPresent()) {
+                return ResponseEntity.unprocessableEntity().body("Barbero not found");
+            }
+
+            // Validar servicios y asegurarse de que están gestionados
+            List<Servicio> serviciosValidos = cita.getServicios().stream()
+                    .map(servicio -> servicioRepository.findById(servicio.getIdServicio())
+                            .orElse(null))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (serviciosValidos.size() != cita.getServicios().size()) {
+                return ResponseEntity.unprocessableEntity().body("Some services not found");
+            }
+
+            // Configurar la cita con las entidades gestionadas
+            cita.setCliente(clienteOptional.get());
+            cita.setBarbero(barberoOptional.get());
+            cita.setServicios(serviciosValidos);
+
+            // Guardar la cita en la base de datos
+            Cita savedCita = citaRepository.save(cita);
+            URI uri = ucb
+                    .path("/citas/{idCita}")
+                    .buildAndExpand(savedCita.getIdCita())
+                    .toUri();
+            return ResponseEntity.created(uri).build();
+        } catch (Exception e) {
+            // Log the error and return an appropriate response
+            e.printStackTrace(); // or use a logger
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating cita: " + e.getMessage());
+        }
     }
 
-    @PutMapping("/{idCita}")
-    public ResponseEntity<Void> update(@PathVariable Long idCita, @RequestBody Cita cita){
-        Optional<Cliente> clienteOptional = clienteRepository.findById(cita.getCliente().getIdCliente());
-        if (!clienteOptional.isPresent()) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
-        Optional<Barbero> barberoOptional = barberoRepository.findById(cita.getBarbero().getIdBarbero());
-        if (!barberoOptional.isPresent()) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
-
-        Optional<Cita> citaOptional = citaRepository.findById(idCita);
-        if(!citaOptional.isPresent()){
-            return ResponseEntity.notFound().build();
-        }
-        cita.setCliente(clienteOptional.get());
-        cita.setBarbero(barberoOptional.get());
-        cita.setIdCita(citaOptional.get().getIdCita());
-        citaRepository.save(cita);
-        return ResponseEntity.noContent().build();
-    }
 
     @DeleteMapping("/{idCita}")
     public ResponseEntity<Void> delete(@PathVariable Long idCita) {

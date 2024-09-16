@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CascadeType;
@@ -24,7 +25,6 @@ import jakarta.persistence.Table;
 public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_cita")
     private Long idCita;
     @Column(nullable = false)
     private Date fecha;
@@ -39,12 +39,13 @@ public class Cita {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Barbero barbero;
 
-    @ManyToMany(cascade= CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
         name= "cita_servicio",
-        joinColumns= @JoinColumn(name = "id_cita", referencedColumnName= "id_cita"),
-        inverseJoinColumns= @JoinColumn(name= "id_servicio", referencedColumnName= "id_servicio")
+        joinColumns= @JoinColumn(name = "id_cita", referencedColumnName= "idCita"),
+        inverseJoinColumns= @JoinColumn(name= "id_servicio", referencedColumnName= "idServicio")
     )
+
     private List<Servicio> servicios;
 
     public Cita(long idCita, Date fecha, Time hora) {
@@ -100,10 +101,10 @@ public class Cita {
     public List<Servicio> getServicios() {
         return servicios;
     }
-    
+
     public void setServicios(List<Servicio> servicios) {
         this.servicios = servicios;
-    }    
+    }
 
     @Override
     public String toString() {
