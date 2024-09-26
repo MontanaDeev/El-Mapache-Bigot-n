@@ -6,5 +6,6 @@ import lombok.Data;
 public class BarberoDTO {
     private Long idBarbero;
     private String nombre;
+    private SucursalDTO sucursal;
 }
 

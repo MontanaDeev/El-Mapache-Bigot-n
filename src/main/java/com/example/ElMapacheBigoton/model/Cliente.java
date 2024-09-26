@@ -23,13 +23,11 @@ public class Cliente {
     private String nombre;
     @Column(nullable = false, length =10)
     private String telefono;
-
-
     //RELACIONES
     //Un cliente puede tener muchas citas
     //la clase cita deberia tener una relacion de MUCHOS a UNO
     @OneToMany(mappedBy="cliente", cascade = CascadeType.ALL, orphanRemoval=true)
-    private List<Cita> citas = new ArrayList();
+    private List<Cita> citas = new ArrayList<>();
 
     public Cliente(long idCliente, String nombre, String telefono) {
         this.idCliente = idCliente;
