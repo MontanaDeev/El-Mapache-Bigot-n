@@ -30,7 +30,7 @@ public class Sucursal {
     }
 
     public Sucursal() {
-
+        
     }
 
     public Integer getIdSucursal() {
