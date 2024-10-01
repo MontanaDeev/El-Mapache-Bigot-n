@@ -52,24 +52,25 @@ public class SucursalController {
 
     @PostMapping()
     public ResponseEntity<?> create(@RequestBody Sucursal sucursal, UriComponentsBuilder ucb) {
+        if (sucursal == null || sucursal.getBarberos() == null) {
+            return ResponseEntity.badRequest().body("Invalid data: Missing required fields");
+        }
+    
+        // Validar barberos y asegurarse de que están gestionados
+        List<Barbero> barberosValidados = sucursal.getBarberos().stream()
+                .map(barbero -> barberoRepository.findById(barbero.getIdBarbero())
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    
+        if (barberosValidados.size() != sucursal.getBarberos().size()) {
+            return ResponseEntity.unprocessableEntity().body("Some barbers not found");
+        }
+    
+        // Configurar la sucursal con las entidades gestionadas
+        sucursal.setBarberos(barberosValidados);
+        
         try {
-            // Validar si la sucrusal está vacía o nula
-            if (sucursal == null || sucursal.getBarberos() == null) {
-                return ResponseEntity.badRequest().body("Invalid data: Missing required fields");
-            }
-            // Validar barberos y asegurarse de que están gestionados
-            List<Barbero> baberosValidados = sucursal.getBarberos().stream()
-                    .map(barbero -> barberoRepository.findById(barbero.getIdBarbero())
-                            .orElse(null))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            if (baberosValidados.size() != sucursal.getBarberos().size()) {
-                return ResponseEntity.unprocessableEntity().body("Some services not found");
-            }
-
-            // Configurar la sucursal con las entidades gestionadas
-            sucursal.setBarberos(baberosValidados);
             // Guardar la sucursal en la base de datos
             Sucursal savedSucursal = sucursalRepository.save(sucursal);
             URI uri = ucb
@@ -79,11 +80,12 @@ public class SucursalController {
             return ResponseEntity.created(uri).build();
         } catch (Exception e) {
             // Log the error and return an appropriate response
-            e.printStackTrace(); // or use a logger
+            e.printStackTrace(); // Consider using a logger instead
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creating cita: " + e.getMessage());
+                    .body("Error creating sucursal: " + e.getMessage());
         }
     }
+    
 
     @DeleteMapping("/{idSucursal}")
     public ResponseEntity<Void> delete(@PathVariable Integer idSucursal) {
