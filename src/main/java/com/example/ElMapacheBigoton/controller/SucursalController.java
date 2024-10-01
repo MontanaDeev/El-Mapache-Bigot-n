@@ -1,6 +1,7 @@
 package com.example.ElMapacheBigoton.controller;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.ElMapacheBigoton.model.Barbero;
+import com.example.ElMapacheBigoton.model.Cita;
 import com.example.ElMapacheBigoton.model.Sucursal;
 import com.example.ElMapacheBigoton.repository.BarberoRepository;
+import com.example.ElMapacheBigoton.repository.CitaRepository;
 import com.example.ElMapacheBigoton.repository.SucursalRepository;
 
 @RestController
@@ -34,6 +37,9 @@ public class SucursalController {
 
     @Autowired
     BarberoRepository barberoRepository;
+
+    @Autowired
+    CitaRepository citaRepository;
 
     @GetMapping()
     public ResponseEntity<Iterable<Sucursal>> findAll() {
@@ -50,26 +56,56 @@ public class SucursalController {
         }
     }
 
+    @GetMapping("/citas/{idSucursal}")
+    public ResponseEntity<?> obtenerCitasPorSucursal(@PathVariable Integer idSucursal) {
+        if (idSucursal == null) {
+            return ResponseEntity.badRequest().body("Invalid data: Missing sucursal ID");
+        }
+
+        // Buscar la sucursal por su ID
+        Sucursal sucursal = sucursalRepository.findById(idSucursal).orElse(null);
+        if (sucursal == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Obtener los barberos de la sucursal
+        List<Barbero> barberos = sucursal.getBarberos();
+
+        // Obtener las citas asociadas a los barberos de la sucursal
+        List<Cita> citas = new ArrayList<>();
+        for (Barbero barbero : barberos) {
+            List<Cita> citasBarbero = citaRepository.findByBarberoId(barbero.getIdBarbero());
+            citas.addAll(citasBarbero);
+        }
+
+        // Verificar si hay citas y devolver la respuesta
+        if (citas.isEmpty()) {
+            return ResponseEntity.ok("No hay citas asociadas a los barberos de la sucursal");
+        }
+
+        return ResponseEntity.ok(citas);
+    }
+
     @PostMapping()
     public ResponseEntity<?> create(@RequestBody Sucursal sucursal, UriComponentsBuilder ucb) {
         if (sucursal == null || sucursal.getBarberos() == null) {
             return ResponseEntity.badRequest().body("Invalid data: Missing required fields");
         }
-    
+
         // Validar barberos y asegurarse de que están gestionados
         List<Barbero> barberosValidados = sucursal.getBarberos().stream()
                 .map(barbero -> barberoRepository.findById(barbero.getIdBarbero())
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-    
+
         if (barberosValidados.size() != sucursal.getBarberos().size()) {
             return ResponseEntity.unprocessableEntity().body("Some barbers not found");
         }
-    
+
         // Configurar la sucursal con las entidades gestionadas
         sucursal.setBarberos(barberosValidados);
-        
+
         try {
             // Guardar la sucursal en la base de datos
             Sucursal savedSucursal = sucursalRepository.save(sucursal);
@@ -85,7 +121,6 @@ public class SucursalController {
                     .body("Error creating sucursal: " + e.getMessage());
         }
     }
-    
 
     @DeleteMapping("/{idSucursal}")
     public ResponseEntity<Void> delete(@PathVariable Integer idSucursal) {
