@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.example.ElMapacheBigoton.dto.BarberoDTO;
+import com.example.ElMapacheBigoton.dto.CitaDTO;
+import com.example.ElMapacheBigoton.dto.ClienteDTO;
+import com.example.ElMapacheBigoton.dto.ServicioDTO;
 import com.example.ElMapacheBigoton.model.Barbero;
 import com.example.ElMapacheBigoton.model.Cita;
 import com.example.ElMapacheBigoton.model.Sucursal;
@@ -83,7 +88,42 @@ public class SucursalController {
             return ResponseEntity.ok("No hay citas asociadas a los barberos de la sucursal");
         }
 
-        return ResponseEntity.ok(citas);
+        //Transformar cita a citaDTO
+        List<CitaDTO> citasDTO = StreamSupport.stream(citas.spliterator(), false)
+        .map(cita -> {
+            CitaDTO citaDTO = new CitaDTO();
+            citaDTO.setIdCita(cita.getIdCita());
+            citaDTO.setFecha(cita.getFecha());
+            citaDTO.setHora(cita.getHora());
+
+            // Mapea Cliente
+            ClienteDTO clienteDTO = new ClienteDTO();
+            clienteDTO.setIdCliente(cita.getCliente().getIdCliente());
+            clienteDTO.setNombre(cita.getCliente().getNombre());
+            clienteDTO.setTelefono(cita.getCliente().getTelefono());
+            citaDTO.setCliente(clienteDTO);
+
+            // Mapea Barbero
+            BarberoDTO barberoDTO = new BarberoDTO();
+            barberoDTO.setIdBarbero(cita.getBarbero().getIdBarbero());
+            barberoDTO.setNombre(cita.getBarbero().getNombre());
+            citaDTO.setBarbero(barberoDTO);
+
+            // Mapea Servicios
+            List<ServicioDTO> serviciosDTO = cita.getServicios().stream().map(servicio -> {
+                ServicioDTO servicioDTO = new ServicioDTO();
+                servicioDTO.setIdServicio(servicio.getIdServicio());
+                servicioDTO.setCosto(servicio.getCosto());
+                servicioDTO.setDescripcion(servicio.getDescripcion());
+                return servicioDTO;
+            }).collect(Collectors.toList());
+            citaDTO.setServicios(serviciosDTO);
+
+            return citaDTO;
+        }).collect(Collectors.toList());
+
+
+        return ResponseEntity.ok(citasDTO);
     }
 
     @GetMapping("/barberos/{idSucursal}")
