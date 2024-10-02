@@ -86,6 +86,29 @@ public class SucursalController {
         return ResponseEntity.ok(citas);
     }
 
+    @GetMapping("/barberos/{idSucursal}")
+    public ResponseEntity<?> obtenerBarberosPorSucursal(@PathVariable Integer idSucursal) {
+        if (idSucursal == null) {
+            return ResponseEntity.badRequest().body("Invalid data: Missing sucursal ID");
+        }
+
+        // Buscar la sucursal por su ID
+        Sucursal sucursal = sucursalRepository.findById(idSucursal).orElse(null);
+        if (sucursal == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Obtener los barberos de la sucursal
+        List<Barbero> barberos = sucursal.getBarberos();
+
+        // Verificar si hay barberos y devolver la respuesta
+        if (barberos.isEmpty()) {
+            return ResponseEntity.ok("No hay barberos asociadas a la sucursal");
+        }
+
+        return ResponseEntity.ok(barberos);
+    }
+
     @PostMapping()
     public ResponseEntity<?> create(@RequestBody Sucursal sucursal, UriComponentsBuilder ucb) {
         if (sucursal == null || sucursal.getBarberos() == null) {

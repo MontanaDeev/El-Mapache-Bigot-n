@@ -43,10 +43,10 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody Cliente nuevoCliente, UriComponentsBuilder ucb) {
-        Cliente guardarCliente = clienteRepository.save(nuevoCliente);  // Aquí guarda el cliente
-        URI uri = ucb.path("/cliente/{idCliente}").buildAndExpand(guardarCliente.getIdCliente()).toUri();  // Aquí construye la URI
-        return ResponseEntity.created(uri).build();  // Aquí devuelve el status 201 Created
+    public ResponseEntity<Cliente> create(@RequestBody Cliente nuevoCliente, UriComponentsBuilder ucb) {
+        Cliente guardarCliente = clienteRepository.save(nuevoCliente); // Aquí guarda el cliente
+        URI uri = ucb.path("/cliente/{idCliente}").buildAndExpand(guardarCliente.getIdCliente()).toUri(); // Aquí construye la URI
+        return ResponseEntity.created(uri).body(guardarCliente); // Aquí devuelve el status 201 Created
     }
 
     @PutMapping("/{idCliente}")
@@ -68,5 +68,5 @@ public class ClienteController {
         }
         return ResponseEntity.notFound().build();
     }
-    
+
 }
