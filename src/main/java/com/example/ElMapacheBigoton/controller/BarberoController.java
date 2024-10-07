@@ -32,7 +32,7 @@ public class BarberoController {
     } 
     @GetMapping("/{idBarbero}")
     public ResponseEntity<Barbero> findById(@PathVariable Long idBarbero){
-      Optional<Barbero> barberoOptional = barberoRepository.findById(idBarbero);
+    Optional<Barbero> barberoOptional = barberoRepository.findById(idBarbero);
         if(barberoOptional.isPresent()){
             return ResponseEntity.ok(barberoOptional.get());
         }else{
